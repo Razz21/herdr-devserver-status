@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2024"
 rust-version = "1.97"
 license = "MIT"
+description = "Detects dev servers in Herdr panes via pluggable specs and reports lifecycle status."
+repository = "https://github.com/Razz21/herdr-devserver-status"
+readme = "README.md"
+keywords = ["herdr", "devserver", "plugin", "cli", "daemon"]
+categories = ["command-line-utilities", "development-tools"]
 
 [lints.clippy]
 all = "deny"
