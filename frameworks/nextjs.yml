@@ -1,0 +1,32 @@
+schema_version: 1
+
+source: "custom:nextjs"
+agent_name: "nextjs"
+display_agent: "Next.js (dev server)"
+starting_message: "Next.js dev server starting"
+
+state_labels:
+  idle: "serving"
+  working: "compiling"
+  blocked: "compile error"
+
+clear_token_names:
+  - "nextjs_has_errors"
+  - "nextjs_url"
+  - "nextjs_port"
+
+bin_path_pattern: '(^|/)next/dist/bin/next$'
+package_name: "next"
+
+signals:
+  - kind: starting
+    needle: "▲ Next.js"
+  - kind: ready
+    needle: "Ready in"
+    counts_as_recent_success: true
+  - kind: building
+    needle: "Compiling"
+  - kind: error
+    needle: "Failed to compile"
+
+url_pattern: 'Local:\s+(https?://[^\s:]+:(\d+))'

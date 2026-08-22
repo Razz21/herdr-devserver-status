@@ -1,0 +1,30 @@
+schema_version: 1
+
+source: "custom:astro"
+agent_name: "astro"
+display_agent: "Astro (dev server)"
+starting_message: "Astro dev server starting"
+
+state_labels:
+  idle: "serving"
+  working: "building"
+  blocked: "build error"
+
+clear_token_names:
+  - "astro_has_errors"
+  - "astro_url"
+  - "astro_port"
+
+bin_path_pattern: '(^|/)astro/astro\.js$'
+package_name: "astro"
+
+signals:
+  - kind: starting
+    needle: "astro"
+  - kind: ready
+    needle: "watching for file changes..."
+    counts_as_recent_success: true
+  - kind: error
+    needle: "error"
+
+url_pattern: 'Local\s+(https?://[^\s:]+:(\d+))'

@@ -1,0 +1,6 @@
+/target
+/bin
+*.log
+.env
+.vscode/
+!.vscode/extensions.json

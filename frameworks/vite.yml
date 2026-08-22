@@ -1,0 +1,46 @@
+schema_version: 1
+
+source: "custom:vite"
+agent_name: "vite"
+display_agent: "Vite (dev server)"
+starting_message: "Vite dev server starting"
+
+state_labels:
+  idle: "serving"
+  working: "building"
+  blocked: "build error"
+
+clear_token_names:
+  - "vite_has_errors"
+  - "vite_url"
+  - "vite_port"
+
+bin_path_pattern: '(^|/)vite/bin/vite\.js$'
+package_name: "vite"
+
+signals:
+  - kind: starting
+    needle: "VITE v"
+  - kind: ready
+    needle: "ready in"
+    counts_as_recent_success: true
+  - kind: ready
+    needle: "Local: http://"
+    counts_as_recent_success: true
+  - kind: ready
+    needle: "watching for file changes..."
+  - kind: ready
+    needle: "built in"
+    counts_as_recent_success: true
+  - kind: building
+    needle: "build started..."
+  - kind: error
+    needle: "Failed to resolve import"
+  - kind: error
+    needle: "Internal server error"
+  - kind: error
+    needle: "Build failed"
+  - kind: error
+    needle: "error during build"
+
+url_pattern: 'Local:\s+(https?://[^\s:]+:(\d+)/?)'
