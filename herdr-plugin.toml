@@ -1,0 +1,51 @@
+id = "herdr-devserver-status"
+name = "herdr-devserver-status"
+version = "0.1.0"
+min_herdr_version = "0.7.0"
+description = "Detects selected dev servers running inside Herdr panes and reports their lifecycle status."
+license = "MIT"
+platforms = ["macos", "linux"]
+
+[[build]]
+platforms = ["linux", "macos"]
+command = ["sh", "scripts/fetch-or-build.sh"]
+
+[[startup]]
+platforms = ["linux", "macos"]
+command = ["target/release/herdr-devserver-status", "daemon"]
+
+[[actions]]
+id = "validate-specs"
+title = "Validate framework specs"
+contexts = ["workspace"]
+command = ["target/release/herdr-devserver-status", "validate-specs"]
+
+[[panes]]
+id = "validate-report"
+title = "Validate framework specs"
+platforms = ["linux", "macos"]
+placement = "popup"
+width = "60%"
+height = 24
+command = [
+  "sh",
+  "-c",
+  "target/release/herdr-devserver-status validate-specs; echo; echo '[press enter to close]'; read _",
+]
+
+[[actions]]
+id = "validate-report-popup"
+title = "Validate framework specs (popup)"
+contexts = ["workspace"]
+command = [
+  "herdr",
+  "plugin",
+  "pane",
+  "open",
+  "--plugin",
+  "herdr-devserver-status",
+  "--entrypoint",
+  "validate-report",
+  "--placement",
+  "popup",
+]

@@ -1,0 +1,30 @@
+schema_version: 1
+
+source: "custom:nuxt"
+agent_name: "nuxt"
+display_agent: "Nuxt (dev server)"
+starting_message: "Nuxt dev server starting"
+
+state_labels:
+  idle: "serving"
+  working: "building"
+  blocked: "build error"
+
+clear_token_names:
+  - "nuxt_has_errors"
+  - "nuxt_url"
+  - "nuxt_port"
+
+bin_path_pattern: '(^|/)nuxt/bin/nuxt\.mjs$'
+package_name: "nuxt"
+
+signals:
+  - kind: starting
+    needle: "Nuxt"
+  - kind: ready
+    needle: "Local:"
+    counts_as_recent_success: true
+  - kind: error
+    needle: "ERROR"
+
+url_pattern: 'Local:\s+(https?://[^\s:]+:(\d+))'

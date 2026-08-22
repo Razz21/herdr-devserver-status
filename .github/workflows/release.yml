@@ -1,0 +1,103 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            musl: true
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            linker_pkg: gcc-aarch64-linux-gnu
+          - target: x86_64-apple-darwin
+            os: macos-13
+          - target: aarch64-apple-darwin
+            os: macos-14
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Install musl toolchain (x86_64-musl only)
+        if: matrix.musl
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
+      - name: Install cross-linker (aarch64-linux only)
+        if: matrix.linker_pkg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.linker_pkg }}
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> "$GITHUB_ENV"
+
+      - run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Package
+        shell: bash
+        run: |
+          asset="herdr-devserver-status-${{ matrix.target }}"
+          pkg="$asset.tar.gz"
+          pkgdir="dist-pkg/$asset"
+          mkdir -p "$pkgdir/frameworks"
+          cp "target/${{ matrix.target }}/release/herdr-devserver-status" "$pkgdir/"
+          cp frameworks/*.yml "$pkgdir/frameworks/"
+          tar -czf "$pkg" -C "$pkgdir" .
+          echo "ASSET=$pkg" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.ASSET }}
+          path: ${{ env.ASSET }}
+          retention-days: 1
+
+  checksums-and-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v7
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate SHA256SUMS
+        working-directory: dist
+        run: sha256sum herdr-devserver-status-*.tar.gz > SHA256SUMS
+
+      - name: Record release commit
+        working-directory: dist
+        run: echo -n "${{ github.sha }}" > COMMIT
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            dist/herdr-devserver-status-*.tar.gz
+            dist/SHA256SUMS
+            dist/COMMIT
+          generate_release_notes: true
