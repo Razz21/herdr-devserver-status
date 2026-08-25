@@ -110,15 +110,16 @@ impl ToolDetector for FrameworkDetector {
         &self.signal_re
     }
 
-    fn match_output(&self, output: &str, previous_had_errors: bool) -> ToolMatchResult {
+    fn match_output(
+        &self,
+        output: &str,
+        previous_status: ToolStatus,
+        previous_had_errors: bool,
+    ) -> ToolMatchResult {
         let result =
             signal_matching::match_output(&self.spec.signals, self.url_re.as_ref(), output);
-        let derived = signal_matching::derive_status(previous_had_errors, &result);
-
-        let has_errors = if derived.status == ToolStatus::Running
-            && result.signals.contains(&SignalKind::Ready)
-            && result.signals.contains(&SignalKind::Error)
-        {
+        let derived = signal_matching::derive_status(previous_status, previous_had_errors, &result);
+        let has_errors = if derived.status == ToolStatus::Running {
             signal_matching::has_recent_error(&self.spec.signals, output)
         } else {
             derived.has_errors

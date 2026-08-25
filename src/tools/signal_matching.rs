@@ -90,16 +90,20 @@ pub struct DerivedStatus {
     pub has_errors: bool,
 }
 
-pub fn derive_status(previous_had_errors: bool, result: &MatchResult) -> DerivedStatus {
-    let is_running = result.signals.contains(&SignalKind::Ready) || result.url.is_some();
+pub fn derive_status(
+    previous_status: ToolStatus,
+    previous_had_errors: bool,
+    result: &MatchResult,
+) -> DerivedStatus {
+    let is_running = previous_status == ToolStatus::Running
+        || result.signals.contains(&SignalKind::Ready)
+        || result.url.is_some();
     let saw_error = result.signals.contains(&SignalKind::Error);
 
     if is_running {
-        // Caller overrides with has_recent_error when both ready and error
-        // are present in the same read.
         DerivedStatus {
             status: ToolStatus::Running,
-            has_errors: false,
+            has_errors: previous_had_errors,
         }
     } else {
         DerivedStatus {

@@ -1,6 +1,6 @@
 id = "herdr-devserver-status"
 name = "herdr-devserver-status"
-version = "0.1.0"
+version = "0.2.0"
 min_herdr_version = "0.7.0"
 description = "Detects selected dev servers running inside Herdr panes and reports their lifecycle status."
 license = "MIT"
