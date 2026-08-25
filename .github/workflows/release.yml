@@ -92,10 +92,24 @@ jobs:
         working-directory: dist
         run: echo -n "${{ github.sha }}" > COMMIT
 
+      - name: Extract changelog section for this tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v ver="## [$VERSION]" '
+            $0 == ver { found=1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+
+          if [ ! -s release-notes.md ]; then
+            echo "No CHANGELOG.md section found for $VERSION" >&2
+            exit 1
+          fi
+
       - uses: softprops/action-gh-release@v3
         with:
+          body_path: release-notes.md
           files: |
             dist/herdr-devserver-status-*.tar.gz
             dist/SHA256SUMS
             dist/COMMIT
-          generate_release_notes: true

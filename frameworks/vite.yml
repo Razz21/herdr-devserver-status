@@ -32,6 +32,9 @@ signals:
   - kind: ready
     needle: "built in"
     counts_as_recent_success: true
+  - kind: ready
+    needle: "(client) hmr update"
+    counts_as_recent_success: true
   - kind: building
     needle: "build started..."
   - kind: error

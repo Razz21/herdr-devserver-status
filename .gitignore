@@ -4,3 +4,4 @@
 .env
 .vscode/
 !.vscode/extensions.json
+.seed-state.json

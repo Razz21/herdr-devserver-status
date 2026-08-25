@@ -62,7 +62,12 @@ pub trait ToolDetector: Send + Sync {
     fn confirm(&self, procs: &[ProcessInfo]) -> Option<ProcessMatch>;
 
     fn signal_regex(&self) -> &Regex;
-    fn match_output(&self, output: &str, previous_had_errors: bool) -> ToolMatchResult;
+    fn match_output(
+        &self,
+        output: &str,
+        previous_status: ToolStatus,
+        previous_had_errors: bool,
+    ) -> ToolMatchResult;
 }
 
 /// All detectors tried, in order, against each newly seen pane's process

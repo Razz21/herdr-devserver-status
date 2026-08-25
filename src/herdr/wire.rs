@@ -84,6 +84,14 @@ pub fn extract_foreground_processes(parsed: &Value) -> Vec<ProcessInfo> {
 /// from that stderr JSON is UNVERIFIED — empirically verify against a pane
 /// that closes mid-wait before shipping.
 pub fn stderr_indicates_timeout(stderr_json: &Value) -> bool {
+    if stderr_json
+        .pointer("/error/code")
+        .and_then(Value::as_str)
+        .map(|c| c.eq_ignore_ascii_case("timeout"))
+        .unwrap_or(false)
+    {
+        return true;
+    }
     const TIMEOUT_HINT_KEYS: [&str; 2] = ["timeout", "timed_out"];
     for key in TIMEOUT_HINT_KEYS {
         if let Some(v) = stderr_json.get(key)
@@ -97,4 +105,12 @@ pub fn stderr_indicates_timeout(stderr_json: &Value) -> bool {
         .and_then(Value::as_str)
         .map(|r| r.eq_ignore_ascii_case("timeout"))
         .unwrap_or(false)
+}
+
+#[test]
+fn recognizes_nested_error_code_timeout() {
+    let json: Value = serde_json::from_str(
+        r#"{"error":{"code":"timeout","message":"timed out waiting for output match"},"id":"cli:pane:wait-output"}"#
+    ).unwrap();
+    assert!(stderr_indicates_timeout(&json));
 }

@@ -109,7 +109,7 @@ fn tick(
     state: &mut TrackedState,
 ) -> Result<(), crate::herdr::HerdrError> {
     let output = client::read_pane_output(pane_id, READ_LINES)?;
-    let result = detector.match_output(&output, state.has_errors);
+    let result = detector.match_output(&output, state.status, state.has_errors);
 
     let changed = result.status != state.status
         || result.has_errors != state.has_errors
